@@ -13,6 +13,8 @@ from django.urls import reverse_lazy, reverse
 from django.forms import modelformset_factory
 from django.contrib import messages
 from django.db.models import Q
+
+
 # third- request looks for appropriate function to match and executes it (in this case it is an http response)
 
 
@@ -75,7 +77,6 @@ class PostDetailView(LoginRequiredMixin, DetailView):
     model = Post
     context_object_name = 'p'
 
-
     # def get_context_data(self, **kwargs):
     #     context = super().get_context_data(**kwargs)
     #     p= Post.objects.get(pk=self.kwargs['pk'])
@@ -85,15 +86,12 @@ class PostDetailView(LoginRequiredMixin, DetailView):
     #     context['comments'] = pc
     #     context['reply'] = r
     #     return context
-    
 
-        
-    
 
 @login_required
 def post(request):
     ImageFormSet = modelformset_factory(PostImage, fields=('modelimage',), labels={
-                                        'modelimage': 'Image'}, extra=3, min_num=1)
+        'modelimage': 'Image'}, extra=3, min_num=1)
     if request.method == 'POST':
 
         postForm = PostForm(request.POST)
@@ -209,7 +207,8 @@ class FollowerListView(LoginRequiredMixin, ListView):
         # org qs
         qs = super().get_queryset()
         # filter by var from captured url
-        return qs.filter(Q(follower__username=self.kwargs['username']) | Q(being_followed__username=self.kwargs['username']))
+        return qs.filter(
+            Q(follower__username=self.kwargs['username']) | Q(being_followed__username=self.kwargs['username']))
 
 
 class LikeListView(LoginRequiredMixin, ListView):
