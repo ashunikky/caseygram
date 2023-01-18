@@ -3,6 +3,7 @@
 {% load humanize %}
 {% block content %}
 
+
     <a href="{% url 'public-profile' p.author.username %}" id="author-link">
         <img class="rounded-circle article-img" src= "{{ p.author.profile.image.url }}">
         <strong>{{ p.author }}</strong>
@@ -105,59 +106,57 @@
                 </p>
         </div>
 
-
+    
     <div>
+    
+        {% load mptt_tags %}
+        {% recursetree p.comments.all %}
+        
+        <div> <a href="{% url 'public-profile' node.author.username %}" id="author-link" id="author-link">
+                     <b>{{ node.author }} :</b>
+                </a>
+                {{ node.content }}
+                <small>{{ node.date_created|naturaltime|upper }}</small>
 
-        {% for comment in p.comments.all reversed %}
-
-        <div>
-            {% if comment.parent == null %}
-            <a href="{% url 'public-profile' comment.author.username %}" id="author-link" id="author-link">
-                <b>  {{ comment.author }}</b>
-            </a>
-            {{ comment.content }}
-            <small>{{ comment.date_created|naturaltime|upper }}</small>
-            
-                    {% if comment.author == user %}
+                {% if node.author == user %}
 
                             <button class="btn btn-link" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             <i class="fas fa-ellipsis-h post-buttons"></i>
                             </button>
                             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
             
-                                <a class="dropdown-item" href="{% url 'comment-update' comment.id %}">Update</a>
-                                <a class="dropdown-item" href="{% url 'comment-reply' comment.id %}">Reply</a>
-                                <a class="dropdown-item" href="{% url 'comment-delete' comment.id %}">Delete</a>
+                                <a class="dropdown-item" href="{% url 'comment-update' node.id %}">Update</a>
+                                <a class="dropdown-item" href="{% url 'comment-reply' node.id %}">Reply</a>
+                                <a class="dropdown-item" href="{% url 'comment-delete' node.id %}">Delete</a>
                             </div>
                     {% else %}
-                        {% for i in comment.comment_likes.all %}
+                        {% for i in node.comment_likes.all %}
                     
-                        {% if user == i.liker %}
-                            <a class='likecommentbutton' data-catid="{{ comment.id }}"><i id='like{{ comment.id }}' class="btn fa-heart fa-lg post-buttons fas"></i></a>
-                                    
-                        {% elif forloop.last %}
-                                                                
-                                            
-                            <a class='likecommentbutton' data-catid="{{ comment.id }}"><i id='like{{ comment.id }}' class="btn far fa-heart fa-lg post-buttons "></i></a>
-                        {% endif %}
+                            {% if user == i.liker %}
+                                <a class='likecommentbutton' data-catid="{{ node.id }}"><i id='like{{ node.id }}' class="btn fa-heart fa-lg post-buttons fas"></i></a>
+                                        
+                            {% elif forloop.last %}
+                                                                    
+                                                
+                                <a class='likecommentbutton' data-catid="{{ node.id }}"><i id='like{{ node.id }}' class="btn far fa-heart fa-lg post-buttons "></i></a>
+                            {% endif %}
                 
 
-                    {% empty %}
-                        <a class='likecommentbutton' data-catid="{{ comment.id }}"><i id='like{{ comment.id }}' class="btn far fa-heart fa-lg post-buttons "></i></a>
+                        {% empty %}
+                            <a class='likecommentbutton' data-catid="{{ node.id }}"><i id='like{{ node.id }}' class="btn far fa-heart fa-lg post-buttons "></i></a>
 
-                    {% endfor %}
-                    <a href="{% url 'comment-likes-list' comment.id %}" id="author-link">
+                        {% endfor %}
+                    <a href="{% url 'comment-likes-list' node.id %}" id="author-link">
                         
-                            <small id='likecount{{comment.id}}'>
+                            <small id='likecount{{node.id}}'>
             
-                            {% if comment.comment_likes.count == 1 %}
-                                {{comment.comment_likes.count}} like
-                            {% elif comment.comment_likes.count > 1 %}
-                                {{comment.comment_likes.count}} likes
+                            {% if node.comment_likes.count == 1 %}
+                                {{node.comment_likes.count}} like
+                            {% elif node.comment_likes.count > 1 %}
+                                {{node.comment_likes.count}} likes
                             {% else %}
                             {% endif %}
                             </small>
-                        
                     </a>
                     <button class="btn btn-link" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <i class="fas fa-ellipsis-h post-buttons"></i>
@@ -165,46 +164,17 @@
                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                                     
                                     
-                        <a class="dropdown-item" href="{% url 'comment-reply' comment.id %}">Reply</a>
+                        <a class="dropdown-item" href="{% url 'comment-reply' node.id %}">Reply</a>
                                     
                     </div>
 
                     {% endif %}
-            {% endif %}
         </div>
-
-            {% for reply in comment.replies.all reversed %}
-
-            <div>
-                <a href="{% url 'public-profile' reply.author.username %}" id="author-link" id="author-link">
-                     {{ reply.author }} Replied to {{comment.author}}
-                </a>
-                {{ reply.content }}
-                <small>{{ reply.date_created|naturaltime|upper }}</small>
-                {% if reply.author == user %}
-                    <button class="btn btn-link" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <i class="fas fa-ellipsis-h post-buttons"></i>
-                    </button>
-                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                            <a class="dropdown-item" href="{% url 'comment-update' reply.id %}">Update</a>
-                            <a class="dropdown-item" href="{% url 'comment-reply' reply.id %}">Reply</a>
-                            <a class="dropdown-item" href="{% url 'comment-delete' reply.id %}">Delete</a>
-                        </div>
-                {% else %}
-                    <button class="btn btn-link" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <i class="fas fa-ellipsis-h post-buttons"></i>
-                    </button>
-                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                            
-                            <a class="dropdown-item" href="{% url 'comment-reply' reply.id %}">Reply</a>
-                            
-                        </div>    
-
-                {% endif %}
-            </div>
-                
-            {% endfor %}  
-        {% endfor %}
+        {% if not node.is_leaf_node %}
+            <div class="children pl-2 pl-md-5"> {{children}}</div>
+        {% endif %}        
+            
+        {% endrecursetree %}        
         
     </div>
 {% endblock content %}
